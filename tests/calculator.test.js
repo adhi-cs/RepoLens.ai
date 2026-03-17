@@ -1,4 +1,4 @@
-const { add, subtract, divide } = require('../src/calculator');
+const { add, subtract, divide, power } = require('../src/calculator');
 
 describe('add', () => {
   it('adds positive numbers', () => {
@@ -12,6 +12,18 @@ describe('add', () => {
 describe('subtract', () => {
   it('subtracts numbers', () => {
     expect(subtract(10, 3)).toBe(7);
+  });
+});
+
+describe('power', () => {
+  it('raises to positive exponent', () => {
+    expect(power(2, 3)).toBe(8);
+  });
+  it('handles zero exponent', () => {
+    expect(power(5, 0)).toBe(1);
+  });
+  it('throws on negative exponent', () => {
+    expect(() => power(2, -1)).toThrow('negative exponent not supported');
   });
 });
 
