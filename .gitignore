@@ -4,3 +4,4 @@ package-lock.json
 *.log
 .DS_Store
 pr-coverage-analysis/
+!pr-coverage-analysis/PR_COVERAGE_REPORT.md
