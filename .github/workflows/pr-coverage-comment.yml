@@ -24,10 +24,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Fetch base branch
+        run: |
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          git fetch origin "$BASE_REF"
+
       - name: Run PR coverage analysis
         run: |
           BASE_REF="${{ github.event.pull_request.base.ref }}"
-          ./analyze_pr_coverage.sh "$BASE_REF" HEAD
+          ./analyze_pr_coverage.sh "origin/$BASE_REF" HEAD
 
       - name: Generate report (if script exists)
         run: |
