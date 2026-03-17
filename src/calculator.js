@@ -17,4 +17,11 @@ function divide(a, b) {
   return a / b;
 }
 
-module.exports = { add, subtract, divide };
+function power(base, exp) {
+  if (exp < 0) {
+    throw new Error('negative exponent not supported');
+  }
+  return base ** exp;
+}
+
+module.exports = { add, subtract, divide, power };
