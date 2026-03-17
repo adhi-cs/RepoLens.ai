@@ -1,0 +1,87 @@
+# Post PR coverage report as a comment on the PR.
+# Runs on every push to a PR; creates or updates a single comment with the report.
+name: PR Coverage Report
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write   # required to create/update PR comments
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Fetch base branch
+        run: |
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          git fetch origin "$BASE_REF"
+
+      - name: Run PR coverage analysis
+        run: |
+          BASE_REF="${{ github.event.pull_request.base.ref }}"
+          ./analyze_pr_coverage.sh "origin/$BASE_REF" HEAD
+
+      - name: Generate report (if script exists)
+        run: |
+          if [ -f scripts/generate-report.js ]; then
+            BASE_REF="${{ github.event.pull_request.base.ref }}"
+            HEAD_REF="${{ github.event.pull_request.head.ref }}"
+            node scripts/generate-report.js "$BASE_REF" "$HEAD_REF"
+          fi
+
+      - name: Comment PR with report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'pr-coverage-analysis/PR_COVERAGE_REPORT.md';
+            if (!fs.existsSync(path)) {
+              console.log('No report file found, skipping comment');
+              return;
+            }
+            const report = fs.readFileSync(path, 'utf8');
+            const marker = '<!-- pr-coverage-report -->';
+            const body = report + '\n\n' + marker;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const botComment = comments.find(c => c.body && c.body.includes(marker));
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body
+              });
+              console.log('Updated existing coverage report comment');
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+              console.log('Created new coverage report comment');
+            }

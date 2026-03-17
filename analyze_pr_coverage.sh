@@ -24,7 +24,7 @@ echo "[1] Diff saved to $DIFF_FILE ($(wc -l < "$DIFF_FILE") lines)"
 
 # List changed files (for mapping to tests)
 CHANGED_FILES="${OUT_DIR}/changed_files.txt"
-git diff "$BASE"...$HEAD --name-only > "$CHANGED_FILES"
+git diff "$BASE"...$HEAD --name-only > "$CHANGED_FILES" || true
 echo "[2] Changed files: $(wc -l < "$CHANGED_FILES")"
 
 # Step 2: Detect test layout

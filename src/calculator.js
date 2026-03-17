@@ -17,4 +17,11 @@ function divide(a, b) {
   return a / b;
 }
 
-module.exports = { add, subtract, divide };
+function remainder(a, b) {
+  if (b === 0) {
+    throw new Error('division by zero');
+  }
+  return a % b;
+}
+
+module.exports = { add, subtract, divide, remainder };
